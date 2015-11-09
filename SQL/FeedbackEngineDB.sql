@@ -153,12 +153,12 @@ BEGIN
 		select @ServiceID =  ServiceID from [fe].[tblServices] where [ServiceName] = @ServiceName
 
 		-- Clean up the URL stem
-		select @QuestionUrlStem = [QuestionUrlStem] from [fe].[tblQuestionSources] where [QuestionSourceID] = @QuestionSourceID
+		select @QuestionUrlStem =  [QuestionSourceUrlStem] from [fe].[tblQuestionSources] where [QuestionSourceID] = @QuestionSourceID
 		set @QuestionUrl = right(@QuestionUrl,len(@QuestionUrl) - len(@QuestionUrlStem))
 
 		insert into [fe].[tblQuestions] ([QuestionSourceID],[ServiceID],[QuestionTitle],[QuestionUrl],[QuestionText]) values (@QuestionSourceID,@ServiceID,@QuestionTitle,@QuestionUrl,@QuestionText)
 
-	select @@IDENTITY
+		select @@IDENTITY
 	end 
 END 
 
