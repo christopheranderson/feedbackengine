@@ -69,12 +69,11 @@ CREATE UNIQUE INDEX AK_tblPeople_Email
     ON [fe].[tblPeople]([Email]);
 
 
-CREATE TABLE [fe].[tblPeopleKeywordMaps]
+CREATE TABLE [fe].[tblPeopleFeatureMaps] 
 (
 	[MapID] INT NOT NULL PRIMARY KEY IDENTITY, 
 	[PersonID] INT NOT NULL, 
 	[FeatureID] INT, 
-    [KeywordMapID] INT,
 	[CreationDate] DATETIME NOT NULL DEFAULT Getdate()
 )
 
@@ -185,3 +184,14 @@ BEGIN
 	end 
 
 END 
+
+-- Load meta data
+
+-- Load Services
+
+
+-- Load Features  
+
+-- Load Sources 
+
+-- Load People 
