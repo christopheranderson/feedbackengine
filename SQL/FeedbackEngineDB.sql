@@ -185,6 +185,15 @@ BEGIN
 
 END 
 
+CREATE PROCEDURE [fe].[spMapPersonFeature]
+	@Email VARCHAR(50),
+	@FeatureName VARCHAR(50)
+AS
+BEGIN
+	declare @personID INT = -1
+	declare @featureID INT = -1
+
+END 
 -- Load meta data
 
 -- Load Services
