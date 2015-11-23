@@ -126,6 +126,20 @@ CREATE TABLE [fe].[tblQuestions]
 CREATE UNIQUE INDEX AK_tblQuestions_QuestionUrl 
     ON [fe].[tblQuestions]([QuestionUrl]);
 
+-- views 
+
+CREATE VIEW [fe].[vwServiceFeatureKeyword]
+AS
+	Select b.ServiceName, a.FeatureID, a.FeatureName, c.Keyword, c.KeywordMapRank
+	From [fe].[tblFeatures] a, [fe].[tblServices] b, [fe].[tblKeywordMaps] c
+	where b.ServiceID = a.ServiceID and c.FeatureID = a.FeatureID
+
+CREATE VIEW [fe].[vwPersonServiceFeatureKeyword]
+AS
+select a.PersonID, a.Email,c.ServiceName,c.FeatureName,c.Keyword,c.KeywordMapRank
+from [fe].[tblPeople] a, [fe].[tblPeopleFeatureMaps] b, [fe].[vwServiceFeatureKeyword] c
+where b.PersonID=a.PersonID and b.FeatureID=c.FeatureID
+
 -- sprocs
 
 CREATE PROCEDURE [fe].[spAddQuestion]
