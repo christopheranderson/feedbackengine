@@ -24,7 +24,7 @@ namespace QuestionProcessor
         private void loadCFG()
         {
             //load config
-            Console.WriteLine("Loading congif: private void loadCFG()");
+            Console.Out.WriteLine("Loading congif: private void loadCFG()");
             if (ConfigFilePath.Length == 0)
                 return;
             try
@@ -35,7 +35,7 @@ namespace QuestionProcessor
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error loading config: " + ex.Message);
+                Console.Out.WriteLine("Error loading config: " + ex.Message);
             }
             return;
         }
