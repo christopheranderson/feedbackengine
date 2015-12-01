@@ -1,0 +1,23 @@
+﻿{
+  "Profiles": [
+    {
+      "ProfileName": "QuestionProcessor",
+      "LogDB": "Server=tcp:nirmasserver.database.windows.net,1433;Database=EarlyWarning;User ID=nirma@nirmasserver;Password=Carnifax1;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;",
+      "DestinationDB": "Server=tcp:nirmasserver.database.windows.net,1433;Database=EarlyWarning;User ID=nirma@nirmasserver;Password=Carnifax1;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;",
+      "Sources": [
+        {
+          "Type": "multiplier1",
+          "Name": "0.25",
+          "ActionText": ""
+        }
+      ],
+      "Commands": [
+        {
+          "Type": "Add",
+          "Name": "AddQuestion",
+          "ActionText": ""
+        }
+      ]
+    }
+  ]
+}
