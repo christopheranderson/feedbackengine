@@ -14,7 +14,6 @@ DROP TABLE [fe].[tblQuestionSources]
 DROP TABLE [fe].[tblServices]
 DROP PROCEDURE  [fe].[spAddQuestion]
 DROP PROCEDURE [fe].[spSetQuestionState]
-
  */
 
 -- features and keywords
@@ -119,7 +118,7 @@ CREATE TABLE [fe].[tblQuestions]
 	[CreationDate] DATETIME NOT NULL DEFAULT Getdate(),
 	[QuestionTitle] VARCHAR(1700) NOT NULL,
 	[QuestionUrl] VARCHAR(1700) NOT NULL,
-	[QuestionText] VARCHAR(MAX) NOT NULL
+	[QuestionText] VARCHAR(MAX) NULL
 )
 
 -- index 
