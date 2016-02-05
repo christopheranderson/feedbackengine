@@ -10,6 +10,9 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
+using System.Net.Http;
+using System.Net.Http.Headers;
 
 namespace FeedbackEngine_WebJobs
 {
@@ -49,41 +52,25 @@ namespace FeedbackEngine_WebJobs
         private async Task SendSlackMessage(Message m, TraceWriter trace)
         {
             JObject slackMessage = new JObject();
-            slackMessage.Add("username", new JValue("customer-bot"));
-            slackMessage.Add("text", new JValue(m.contents));
-            if (m.to != null)
-            {
-                slackMessage.Add("channel", new JValue(m.to));
+            slackMessage["username"] = "customer-bot";
+            slackMessage["text"] = m.contents;
+            slackMessage["icon_emoji"] = ":zumo:";
+
+            if (m.to != null) {
+                slackMessage["channel"] = m.to;
             }
+
             trace.Info("Data: \n" + slackMessage.ToString());
             await SendJSONtoURL(slackMessage, ConfigurationManager.AppSettings["SLACK_CustomerNotificationsHook"], trace);
         }
 
         private async Task<bool> SendJSONtoURL(JObject json, string url, TraceWriter trace)
         {
-            // # Prepare response
-            // Buffer from Json string
-            byte[] buffer = Encoding.UTF8.GetBytes(json.ToString());
+            var client = new HttpClient();
+            var response = await client.PostAsJsonAsync(url, json);
 
-            HttpWebRequest request = HttpWebRequest.CreateHttp(url);
-
-            request.Method = "POST";
-            request.ContentType = "application/json";
-            request.ContentLength = buffer.Length;
-
-            Stream Data = await request.GetRequestStreamAsync();
-
-            await Data.WriteAsync(buffer, 0, buffer.Length);
-            Data.Close();
-
-            HttpWebResponse response = (HttpWebResponse)(await request.GetResponseAsync());
-
-            Stream responseContent = response.GetResponseStream();
-            StreamReader responseData = new StreamReader(responseContent);
-
-            if (response.StatusCode != HttpStatusCode.OK)
-            {
-                trace.Error(String.Format("Status Code: {0} - Content: {1}", response.StatusCode, await responseData.ReadToEndAsync()));
+            if (response.StatusCode != HttpStatusCode.OK) {
+                trace.Error(String.Format("Status Code: {0} - Content: {1}", response.StatusCode, response.Content));
                 return false;
             }
 
