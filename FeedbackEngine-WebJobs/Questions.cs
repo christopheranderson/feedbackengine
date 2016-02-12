@@ -34,22 +34,25 @@ namespace FeedbackEngine_WebJobs
         }
         
         // On Timer, grab items from RSS Feed
-        public void RSSFeedProcessor([TimerTrigger("0 */5 * * * *", RunOnStartup=true)] TimerInfo timer, [Queue("SaveQuestions")]  ICollector<Question> outQ, TraceWriter log)
+        public void RSSFeedProcessor(
+            [TimerTrigger("0 */5 * * * *", RunOnStartup=true)] TimerInfo timer, 
+            [Queue("SaveQuestions")] ICollector<Question> outQ, 
+            TraceWriter log)
         {
             log.Verbose("RSS Feed Processor started");
             Console.WriteLine("RSS Feed Processor started");
+
             foreach (var feeds in mFeedSources)
             {
                 switch(feeds.Key){
                     case "StackOverflow":
-                        foreach (var feed in feeds.Value)
-                        {
-                            XmlReader reader = XmlReader.Create(feed.Value);
-                            SyndicationFeed rss = SyndicationFeed.Load(reader);
-                            reader.Close();
-                            foreach (SyndicationItem item in rss.Items)
-                            {
-                                outQ.Add(ProcessStackOverflowEntry(item, feed.Key));
+                        foreach (var feed in feeds.Value) {
+                            using (XmlReader reader = XmlReader.Create(feed.Value)) {
+                                SyndicationFeed rss = SyndicationFeed.Load(reader);
+
+                                foreach (SyndicationItem item in rss.Items) {
+                                    outQ.Add(ProcessStackOverflowEntry(item, feed.Key));
+                                }
                             }
                         }
                         break;
@@ -60,21 +63,26 @@ namespace FeedbackEngine_WebJobs
             }
         }
 
-        public void SaveQuestion([QueueTrigger("SaveQuestions")] Question q, [Table("Questions")] CloudTable questionsTable, [Queue("SlackMessage")] ICollector<Message> messageQ, [Table("People")] CloudTable peopleTable)
+        public void SaveQuestion([QueueTrigger("SaveQuestions")] Question q, [Table("Questions")] CloudTable questionsTable, [Queue("SlackMessage")] ICollector<Message> messageQ, [Table("People")] CloudTable peopleTable, TraceWriter log)
         {
             // Upsert into Table Storage
             TableOperation retrieveOperation = TableOperation.Retrieve<Question>(q.PartitionKey, q.RowKey);
+
             TableResult retrievedResult = questionsTable.Execute(retrieveOperation);
             Question updateEntity = (Question)retrievedResult.Result;
 
             // Update existing item if it has new content
-            if (updateEntity != null && updateEntity.UpdatedOn != q.UpdatedOn)
+            if (updateEntity != null)
             {
-                // Fields requiring update
-                updateEntity.UpdatedOn = q.UpdatedOn;
+                // check for new content
+                if (updateEntity.UpdatedOn != q.UpdatedOn) {
+                    // Fields requiring update
+                    updateEntity.UpdatedOn = q.UpdatedOn;
+                    updateEntity.ETag = "*";
 
-                TableOperation updateOperation = TableOperation.Replace(updateEntity);
-                questionsTable.Execute(updateOperation);
+                    TableOperation updateOperation = TableOperation.Replace(updateEntity);
+                    questionsTable.Execute(updateOperation);
+                }
             }
             // Process new item
             else
@@ -96,7 +104,7 @@ namespace FeedbackEngine_WebJobs
                 });
 
                 // If they've opted into Slack Notify, send them a message
-                if(p!=null && p.SlackNotify)
+                if (p != null && p.SlackNotify)
                 {
                     messageQ.Add(new Message()
                     {
