@@ -1,6 +1,6 @@
-# Feedback Engine
+# Feedback Engine - A WebJobs Demo
 
-A tool for collecting questions and feedback from various sources, assigning owners, and notifying them and others.
+A tool for collecting questions and feedback from various sources, assigning owners, and notifying them and others. This also servces as a demo for Azure WebJobs SDK.
 
 ## Why build a new thing?
 
