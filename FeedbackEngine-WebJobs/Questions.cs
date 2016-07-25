@@ -17,6 +17,8 @@ namespace FeedbackEngine_WebJobs
 {
     public class Questions
     {
+
+        // Using a dictionary for now, but would normally store this in external storage or something
         private Dictionary<string, Dictionary<string, string>> mFeedSources = new Dictionary<string,Dictionary<string,string>>()
         {
             {"StackOverflow", new Dictionary<string, string>()
@@ -26,12 +28,6 @@ namespace FeedbackEngine_WebJobs
                 }
             }
         };
-
-        // Post /Questions/AddQuestion will add question to NewQuestions Queue
-        public void AddQuestion([WebHookTrigger] Question inQ, [Queue("SaveQuestions")] out Question outQ)
-        {
-            outQ = inQ;
-        }
         
         // On Timer, grab items from RSS Feed
         public void RSSFeedProcessor(
@@ -47,12 +43,18 @@ namespace FeedbackEngine_WebJobs
                 switch(feeds.Key){
                     case "StackOverflow":
                         foreach (var feed in feeds.Value) {
-                            using (XmlReader reader = XmlReader.Create(feed.Value)) {
-                                SyndicationFeed rss = SyndicationFeed.Load(reader);
+                            try {
+                                using (XmlReader reader = XmlReader.Create(feed.Value)) {
+                                    SyndicationFeed rss = SyndicationFeed.Load(reader);
 
-                                foreach (SyndicationItem item in rss.Items) {
-                                    outQ.Add(ProcessStackOverflowEntry(item, feed.Key));
+                                    foreach (SyndicationItem item in rss.Items) {
+                                        outQ.Add(ProcessStackOverflowEntry(item, feed.Key));
+                                    }
                                 }
+                            }
+                            catch (Exception e)
+                            {
+                                log.Error(String.Format("Couldn't read from feed - {0}", feeds.Value), e);
                             }
                         }
                         break;
@@ -115,14 +117,15 @@ namespace FeedbackEngine_WebJobs
             }
         }
 
-        // Begin private methods
+        // Private methods
 
         private People AssignOwner(Question q, CloudTable table)
         {
             // Grab a random person from the list of people who match that category.
             TableQuery<People> query = new TableQuery<People>();
-            var results = table.ExecuteQuery(query).Where(p => p.Categories.Contains(q.Category));
-            if(results.Count() <= 0)
+            var results = table
+                .ExecuteQuery(query);
+            if (results.Count() <= 0)
             {
                 return null;
             }

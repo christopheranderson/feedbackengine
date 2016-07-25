@@ -21,21 +21,6 @@ namespace FeedbackEngine_WebJobs
         // WebJob Functions (This are loaded by the SDK, which looks for functions with various attributes defined by the WebJobs SDK
 
         /// <summary>
-        /// Receives a WebHook Message and passes it through to Slack, without modification. This allows us to post messages without hitting the Queue.
-        /// </summary>
-        /// <param name="context">This contains information about the incoming Webhook</param>
-        /// <param name="trace">This is used to log from the application to the Azure WebJobs Dashboard</param>
-        /// <returns></returns>
-        public async Task PassSlackMessage([WebHookTrigger] WebHookContext context, TraceWriter trace)
-        {
-            trace.Info("Route: /Slack/NewSuggestion received data");
-            JObject dataEvent = JObject.Parse(await context.Request.Content.ReadAsStringAsync());
-            trace.Info("Data: \n" + dataEvent.ToString());
-
-            await SendJSONtoURL(dataEvent, ConfigurationManager.AppSettings["SLACK_CustomerNotificationsHook"], trace);
-        }
-
-        /// <summary>
         /// Grabs messages from the "SlackMessage" Queue and posts them to the Slack Webhook specified in App Settings under "SLACK_CustomerNotificationsHook"
         /// </summary>
         /// <param name="m">Message from the Queue to be posted to Slack</param>
